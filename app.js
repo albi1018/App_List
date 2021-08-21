@@ -61,6 +61,46 @@ class BooksList {
     saveData () {
         storage.saveItems(this.books)
     }
+
+    moveBookUp(bookId) {
+        let arr = this.books;
+
+        for (let i=0; i< arr.length; i++) {
+            let el = arr[i];
+
+            if(el.id == bookId) {
+                if (i >=1) {
+                    let temp = arr[i-1];
+                    arr[i-1] = arr[i];
+                    arr[i] = temp;
+                    break;
+                }
+            }
+        }
+        this.saveData();
+        ui.deleteAllBookRows();
+        this.localDataFromStorage();
+    }
+
+    moveBookDown(bookId) {
+        let arr = this.books;
+
+        for (let i=0; i< arr.length; i++) {
+            let el = arr[i];
+
+            if(el.id == bookId) {
+                if (i <= arr.length - 2) {
+                    let temp = arr[i+1];
+                    arr[i+1] = arr[i];
+                    arr[i] = temp;
+                    break;
+                }
+            }
+        }
+        this.saveData();
+        ui.deleteAllBookRows();
+        this.localDataFromStorage();
+    }
 }
 
 const booksList = new BooksList();
@@ -72,6 +112,13 @@ class Ui {
         e.target.parentElement.parentElement.remove();
         booksList.removeBookById(bookId);
     }
+
+    deleteAllBookRows () {
+        const tbodyRows = document.querySelectorAll("#booksTable tbody tr");
+        tbodyRows.forEach(function (el) {
+            el.remove();
+        });
+    }
     addBookToTable (book) {
         const tbody = document.querySelector('#booksTable tbody');
         const tr = document.createElement("tr");
@@ -81,13 +128,37 @@ class Ui {
             <td> ${book.author}</td>
             <td>
                 <button type="button" data-book-id="${book.id}" class="btn btn-danger btn-sm delete">Skasuj</button>
+                <button type="button" data-book-id="${book.id}" class="btn btn-secondary btn-sm up-arrow">▲</button>
+                <button type="button" data-book-id="${book.id}" class="btn btn-secondary btn-sm down-arrow">▼</button>
             </td>
         `;
 
         tbody.appendChild(tr);
+
         let deleteButton = document.querySelector(`button.delete[data-book-id='${book.id}']`);
         deleteButton.addEventListener("click", (e) => this.deleteBook(e))
+
+
+        let upButton = document.querySelector(`button.up-arrow[data-book-id='${book.id}']`);
+        upButton.addEventListener("click", (e) => this.arrowUp(e))
+
+
+        let downButton = document.querySelector(`button.down-arrow[data-book-id='${book.id}']`);
+        downButton.addEventListener("click", (e) => this.arrowDown(e))
+
         this.clearForm();
+    }
+
+    arrowUp(e) {
+        let bookId = e.target.getAttribute("data-book-id");
+        console.log("up", bookId);
+        booksList.moveBookUp(bookId);
+    }
+
+    arrowDown(e) {
+        let bookId = e.target.getAttribute("data-book-id");
+        console.log("down", bookId);
+        booksList.moveBookDown(bookId);
     }
 
     clearForm () {
